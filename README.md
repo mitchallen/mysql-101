@@ -5,6 +5,20 @@ mysql-101
 
 It's a mixture of notes that needs to be cleaned up.
 
+## Setup .env.local
+
+* Create a local file in the root of the project:
+
+```sh
+touch .env.local
+```
+
+* Add the var for the MySQL password:
+
+```sh
+MYSQL_ROOT_PASSWORD=your-root-password
+```
+
 ## Installatiom
 
 ### On Desktop (Mac OS)
@@ -116,10 +130,6 @@ By default, data stored in the MySQL container is ephemeral and will be lost whe
 - Remove the volume: `docker volume rm mysql-data`
 
 This guide should help you get MySQL running in a Docker container on your Mac.
-
-## Issues
-
-* The **make connect** command waits for the user to enter a password, but the screen doesn't indicate that's what it's doing.
 
 ## MySQL Workbench
 

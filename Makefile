@@ -4,7 +4,7 @@
 CONTAINER_NAME=mysql-container
 MYSQL_IMAGE=mysql:latest
 VOLUME_NAME=mysql-data
-SQL_FILE_PATH=./mysql_script.sql  # Change this to the path of your SQL script
+SQL_FILE_PATH=mysql_script.sql  # Change this to the path of your SQL script
 
 # Default target: help
 .PHONY: help
@@ -19,12 +19,6 @@ help:
 	@echo "  make volume-remove - Remove the named volume for MySQL"
 	@echo "  make run-script    - Run an SQL script file from your local machine"
 
-# Function to prompt for password
-define prompt_password
-	read -s password; \
-	echo $$password
-endef
-
 # Pull the MySQL image
 .PHONY: pull
 pull:
@@ -33,14 +27,12 @@ pull:
 # Run the MySQL container
 .PHONY: run
 run: pull
-	$(eval MYSQL_ROOT_PASSWORD=$(shell $(prompt_password)))
-	docker run --name $(CONTAINER_NAME) -v $(VOLUME_NAME):/var/lib/mysql -e MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD)  -p 3306:3306 -d $(MYSQL_IMAGE)
+	docker run --name $(CONTAINER_NAME) -v $(VOLUME_NAME):/var/lib/mysql --env-file ./.env.local -p 3306:3306 -d $(MYSQL_IMAGE)
 
 # Connect to the MySQL container
 .PHONY: connect
 connect:
-	$(eval MYSQL_ROOT_PASSWORD=$(shell $(prompt_password)))
-	docker exec -it $(CONTAINER_NAME) mysql -uroot -p$(MYSQL_ROOT_PASSWORD)
+	docker exec -it $(CONTAINER_NAME) mysql -uroot -p
 
 # Stop the MySQL container
 .PHONY: stop
@@ -63,9 +55,9 @@ volume-remove:
 	docker volume rm $(VOLUME_NAME)
 
 # Run an SQL script file from your local machine
+# Add the prompt, run:  source /tmp/script.sql
 .PHONY: run-script
 run-script:
-	$(eval MYSQL_ROOT_PASSWORD=$(shell $(prompt_password)))
 	docker cp $(SQL_FILE_PATH) $(CONTAINER_NAME):/tmp/script.sql
-	docker exec -it $(CONTAINER_NAME) mysql -uroot -p$(MYSQL_ROOT_PASSWORD) < /tmp/script.sql
+	docker exec -it $(CONTAINER_NAME) mysql -uroot -p 
 	docker exec -it $(CONTAINER_NAME) rm /tmp/script.sql
